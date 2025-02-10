@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:parakeet/dash.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -17,7 +23,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white, // White background for entire app
       ),
-      home: const MainPage(),
+      home: const AuthGate(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegistrationScreen(),
@@ -25,6 +31,32 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Listen to the auth state changes
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return const Center(child: Text('Something went wrong!'));
+        } else if (snapshot.hasData) {
+          // If the user is logged in, go to the Dashboard
+          return const DashboardScreen();
+        } else {
+          // If the user is not logged in, show the Login Screen
+          return const LoginScreen();
+        }
+      },
+    );
+  }
+}
+
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -53,7 +85,7 @@ class MainPage extends StatelessWidget {
               ),
               const Spacer(),  // Pushes the row to the bottom
               const Text(
-                '🇨🇦 Made in Canada',
+                ' 🍁 Made in Canada',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -104,8 +136,42 @@ class MainPage extends StatelessWidget {
     );
   }
 }
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Method for handling login
+  Future<void> _login() async {
+    try {
+      // Sign in with email and password
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // If login is successful, show success message and navigate
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login Successful!')),
+      );
+      Navigator.pushReplacementNamed(context, '/dashboard');
+
+      // You can navigate to the next screen here, for example:
+      // Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      // Handle errors if login fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login Failed: ${e.message}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,76 +188,73 @@ class LoginScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,  // Align to the left for the heading
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Login" heading with clean font, big size, and separate words
             const Text(
               'Log In',
               style: TextStyle(
                 fontSize: 50,
                 fontWeight: FontWeight.normal,
-                fontFamily: 'Roboto',  // Clean modern font
+                fontFamily: 'Roboto',
                 color: Colors.black,
               ),
             ),
             const SizedBox(height: 32),
-
-            // Email input field with thick border and slight radius
+            // Email input field
             TextField(
+              controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Enter your email',
                 hintStyle: const TextStyle(fontSize: 18, color: Colors.grey),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,  // Slight radius for a soft look
-                  borderSide: const BorderSide(color: Colors.black, width: 4), // Thicker border
+                  borderRadius: BorderRadius.zero,
+                  borderSide: const BorderSide(color: Colors.black, width: 4),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.zero,
-                  borderSide: const BorderSide(color: Colors.black, width: 3), // Thicker on focus
+                  borderSide: const BorderSide(color: Colors.black, width: 3),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-
-            // Password input field with thick border and slight radius
+            // Password input field
             TextField(
+              controller: _passwordController,
               obscureText: true,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Enter your password',
                 hintStyle: const TextStyle(fontSize: 18, color: Colors.grey),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,  // Slight radius
-                  borderSide: const BorderSide(color: Colors.black, width: 4), // Thicker border
+                  borderRadius: BorderRadius.zero,
+                  borderSide: const BorderSide(color: Colors.black, width: 4),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.zero,
-                  borderSide: const BorderSide(color: Colors.black, width: 3), // Thicker on focus
+                  borderSide: const BorderSide(color: Colors.black, width: 3),
                 ),
               ),
             ),
             const SizedBox(height: 24),
-
-            // Login Button with glowing effect and square corners
+            // Login Button
             ElevatedButton(
-              onPressed: () {
-                // Handle login logic here
-              },
+              onPressed: _login,  // Calls the login function
               child: const Text(
                 'LOG IN',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
               ),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18), // White text color
+                foregroundColor: Colors.white, backgroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),  // Slight radius
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                minimumSize: const Size(double.infinity, 60), // Button spans across the screen
-                side: const BorderSide(color: Colors.black, width: 3), // Thicker border
-                shadowColor: Colors.black.withOpacity(0.4), // Soft shadow for a glowing effect
-                elevation: 5, // Makes the button pop
+                minimumSize: const Size(double.infinity, 60),
+                side: const BorderSide(color: Colors.black, width: 3),
+                shadowColor: Colors.black.withOpacity(0.4),
+                elevation: 5,
               ),
             ),
           ],
@@ -200,8 +263,52 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
-class RegistrationScreen extends StatelessWidget {
+
+class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
+
+  @override
+  _RegistrationScreenState createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Method for handling registration
+  Future<void> _register() async {
+    // Validate passwords match
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    try {
+      // Create a user with email and password
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // If registration is successful, show success message and navigate
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration Successful!')),
+      );
+      Navigator.pushReplacementNamed(context, '/dashboard');
+
+      // Navigate to the next screen, e.g., Home screen:
+      // Navigator.pushReplacementNamed(context, '/home');
+    } on FirebaseAuthException catch (e) {
+      // Handle errors (e.g., weak password, email already in use)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration Failed: ${e.message}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -218,95 +325,96 @@ class RegistrationScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,  // Align to the left for the heading
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Register" heading with clean font, big size, and separate words
             const Text(
               'Register',
               style: TextStyle(
                 fontSize: 50,
                 fontWeight: FontWeight.normal,
-                fontFamily: 'Roboto',  // Clean modern font
+                fontFamily: 'Roboto',
                 color: Colors.black,
               ),
             ),
             const SizedBox(height: 32),
 
-            // Email input field with thick border and slight radius
+            // Email input field
             TextField(
+              controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Enter your email',
                 hintStyle: const TextStyle(fontSize: 18, color: Colors.grey),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,  // Slight radius for a soft look
-                  borderSide: const BorderSide(color: Colors.black, width: 4), // Thicker border
+                  borderRadius: BorderRadius.zero,
+                  borderSide: const BorderSide(color: Colors.black, width: 4),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.zero,
-                  borderSide: const BorderSide(color: Colors.black, width: 3), // Thicker on focus
+                  borderSide: const BorderSide(color: Colors.black, width: 3),
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Password input field with thick border and slight radius
+            // Password input field
             TextField(
+              controller: _passwordController,
               obscureText: true,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Enter your password',
                 hintStyle: const TextStyle(fontSize: 18, color: Colors.grey),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,  // Slight radius
-                  borderSide: const BorderSide(color: Colors.black, width: 4), // Thicker border
+                  borderRadius: BorderRadius.zero,
+                  borderSide: const BorderSide(color: Colors.black, width: 4),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.zero,
-                  borderSide: const BorderSide(color: Colors.black, width: 3), // Thicker on focus
+                  borderSide: const BorderSide(color: Colors.black, width: 3),
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Confirm password input field with thick border and slight radius
+            // Confirm password input field
             TextField(
+              controller: _confirmPasswordController,
               obscureText: true,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Confirm your password',
                 hintStyle: const TextStyle(fontSize: 18, color: Colors.grey),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,  // Slight radius
-                  borderSide: const BorderSide(color: Colors.black, width: 4), // Thicker border
+                  borderRadius: BorderRadius.zero,
+                  borderSide: const BorderSide(color: Colors.black, width: 4),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.zero,
-                  borderSide: const BorderSide(color: Colors.black, width: 3), // Thicker on focus
+                  borderSide: const BorderSide(color: Colors.black, width: 3),
                 ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Register Button with glowing effect and square corners
+            // Register Button
             ElevatedButton(
-              onPressed: () {
-                // Handle registration logic here
-              },
+              onPressed: _register,  // Calls the registration function
               child: const Text(
                 'SIGN UP',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
               ),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18), // White text color
+                foregroundColor: Colors.white, backgroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),  // Slight radius
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                minimumSize: const Size(double.infinity, 60), // Button spans across the screen
-                side: const BorderSide(color: Colors.black, width: 3), // Thicker border
-                shadowColor: Colors.black.withOpacity(0.4), // Soft shadow for a glowing effect
-                elevation: 5, // Makes the button pop
+                minimumSize: const Size(double.infinity, 60),
+                side: const BorderSide(color: Colors.black, width: 3),
+                shadowColor: Colors.black.withOpacity(0.4),
+                elevation: 5,
               ),
             ),
           ],
