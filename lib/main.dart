@@ -50,7 +50,7 @@ class AuthGate extends StatelessWidget {
           return const DashboardScreen();
         } else {
           // If the user is not logged in, show the Login Screen
-          return const LoginScreen();
+          return const MainPage();
         }
       },
     );
