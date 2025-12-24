@@ -5,23 +5,29 @@ echo "📦 Installing Flutter for Vercel build..."
 
 # Install Flutter SDK
 FLUTTER_VERSION="3.24.0"
-FLUTTER_SDK_PATH="/tmp/flutter"
+FLUTTER_SDK_PATH="$HOME/flutter"
 
-if [ ! -d "$FLUTTER_SDK_PATH" ]; then
+# Create directory if it doesn't exist
+mkdir -p "$FLUTTER_SDK_PATH"
+
+if [ ! -f "$FLUTTER_SDK_PATH/bin/flutter" ]; then
   echo "Downloading Flutter $FLUTTER_VERSION..."
   cd /tmp
-  curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz | tar xJ
-  mv flutter $FLUTTER_SDK_PATH
+  curl -L -o flutter.tar.xz "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+  tar xf flutter.tar.xz
+  mv flutter/* "$FLUTTER_SDK_PATH/" || cp -r flutter/* "$FLUTTER_SDK_PATH/"
+  rm -rf flutter flutter.tar.xz
 fi
 
 # Add Flutter to PATH
 export PATH="$FLUTTER_SDK_PATH/bin:$PATH"
 
-# Verify installation
-flutter --version
+# Make flutter executable
+chmod +x "$FLUTTER_SDK_PATH/bin/flutter"
 
-# Accept licenses
-yes | flutter doctor --android-licenses || true
+# Verify installation
+echo "Verifying Flutter installation..."
+"$FLUTTER_SDK_PATH/bin/flutter" --version || flutter --version
 
 echo "✅ Flutter installation complete"
 
