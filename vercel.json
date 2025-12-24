@@ -1,8 +1,8 @@
 {
-  "buildCommand": "flutter build web --release",
+  "buildCommand": "chmod +x build.sh && ./build.sh",
   "outputDirectory": "build/web",
   "framework": null,
-  "installCommand": "flutter pub get",
+  "installCommand": "chmod +x install.sh && ./install.sh",
   "devCommand": "flutter run -d chrome",
   "rewrites": [
     {

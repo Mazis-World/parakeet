@@ -18,9 +18,11 @@ The Parakeet app has been committed and pushed to your repository. Now let's dep
 3. **Configure Project:**
    - **Framework Preset:** Other
    - **Root Directory:** `./` (leave as default)
-   - **Build Command:** `flutter build web --release`
+   - **Build Command:** `chmod +x build.sh && ./build.sh`
    - **Output Directory:** `build/web`
-   - **Install Command:** `flutter pub get`
+   - **Install Command:** `chmod +x install.sh && ./install.sh`
+   
+   **Note:** The build scripts will automatically install Flutter SDK during the build process.
 
 4. **Environment Variables (if needed):**
    - Add any Firebase environment variables if required
