@@ -1,8 +1,8 @@
 {
-  "buildCommand": "bash -c 'chmod +x install.sh build.sh && ./install.sh && ./build.sh'",
+  "buildCommand": "bash install.sh && bash build.sh",
   "outputDirectory": "build/web",
   "framework": null,
-  "installCommand": "echo 'Install will run in build command'",
+  "installCommand": "echo 'Installing dependencies...'",
   "devCommand": "flutter run -d chrome",
   "rewrites": [
     {
