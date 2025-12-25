@@ -1,8 +1,8 @@
 {
-  "buildCommand": "bash vercel-build.sh",
+  "buildCommand": "FLUTTER_VERSION=3.24.0 && FLUTTER_SDK=$HOME/flutter && mkdir -p $FLUTTER_SDK && cd /tmp && curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -o flutter.tar.xz && tar xf flutter.tar.xz && mv flutter/* $FLUTTER_SDK/ && rm -rf flutter flutter.tar.xz && export PATH=$FLUTTER_SDK/bin:$PATH && cd $VERCEL_SOURCE_DIR && $FLUTTER_SDK/bin/flutter pub get && $FLUTTER_SDK/bin/flutter build web --release",
   "outputDirectory": "build/web",
   "framework": null,
-  "installCommand": "echo 'Dependencies will be installed during build'",
+  "installCommand": "echo 'Installing Flutter during build...'",
   "devCommand": "flutter run -d chrome",
   "rewrites": [
     {
