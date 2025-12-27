@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:parakeet/dash.dart';
-
-// Conditional import - only import if file exists
-// For production, generate firebase_options.dart using: flutterfire configure
-import 'firebase_options.dart' if (dart.library.html) 'firebase_options_web.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,9 +11,8 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    // If firebase_options.dart is missing, show error
     debugPrint('Firebase initialization error: $e');
-    debugPrint('Please run: flutterfire configure');
+    // Continue anyway - app will show error if Firebase is needed
   }
   runApp(const MyApp());
 }

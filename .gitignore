@@ -48,7 +48,6 @@ app.*.map.json
 .vercel
 
 # Firebase
-# Note: firebase_options.dart should be committed for Vercel builds
-# Uncomment the line below only if you want to exclude it
-# firebase_options.dart
+# Note: firebase_options.dart is now committed for Vercel builds
+# If you regenerate it, make sure to commit the updated version
 firebase_options.dart.bak
