@@ -1020,7 +1020,8 @@ class _BookingRequestCard extends StatelessWidget {
       });
 
       // Send notification
-      await NotificationService().notifyBookingStatusChanged(bookingId, 'confirmed');
+      final notificationService = NotificationService();
+      await notificationService.notifyBookingStatusChanged(bookingId, 'confirmed');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1077,7 +1078,8 @@ class _BookingRequestCard extends StatelessWidget {
         });
 
         // Send notification
-        await NotificationService().notifyBookingStatusChanged(bookingId, 'cancelled');
+        final notificationService = NotificationService();
+        await notificationService.notifyBookingStatusChanged(bookingId, 'cancelled');
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
