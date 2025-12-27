@@ -314,16 +314,22 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
               ),
             ),
             child: image == null
-                ? Center(child: Text('Select Image'))
-                : (kIsWeb
-                ? Image.memory(
-              base64Decode(image as String), // Display image from base64 for Web
-              fit: BoxFit.cover,
-            )
-                : Image.file(
-              image, // Display the selected file on mobile
-              fit: BoxFit.cover,
-            )),
+                ? const Center(child: Text('Select Image'))
+                : FutureBuilder<Uint8List>(
+                    future: image.readAsBytes(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasData) {
+                        return Image.memory(
+                          snapshot.data!,
+                          fit: BoxFit.cover,
+                        );
+                      }
+                      return const Center(child: Text('Error loading image'));
+                    },
+                  ),
           ),
         );
       },
