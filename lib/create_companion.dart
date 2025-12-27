@@ -3,9 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:convert'; // For base64 encoding
-import 'dart:io' if (dart.library.html) 'dart:html' as io;
+import 'dart:typed_data';
 
 class AnimalFormScreen extends StatefulWidget {
   @override
@@ -279,7 +277,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       ),
     );
   }
-  List<File?> _images = [null, null, null, null, null]; // Store 5 image files
+  List<XFile?> _images = [null, null, null, null, null]; // Store 5 image files
   // Method to pick an image and store it
   Future<void> _pickImage(int index) async {
     final picker = ImagePicker();
