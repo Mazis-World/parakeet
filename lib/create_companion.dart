@@ -205,7 +205,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                     // Upload each selected image
                     for (int i = 0; i < _images.length; i++) {
                       final image = _images[i];
-                      if (image != null) {
+                      if (image != null && image is XFile) {
                         try {
                           final timestamp = DateTime.now().millisecondsSinceEpoch;
                           final imageName = '${user.uid}_${timestamp}_$i.jpg';
@@ -214,17 +214,11 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                               .child('animal_images')
                               .child(imageName);
 
-                          if (kIsWeb) {
-                            // For web, we need to handle base64 or Uint8List
-                            // The current implementation has issues, so we'll skip web image upload for now
-                            // TODO: Fix web image upload
-                            continue;
-                          } else {
-                            // For mobile, upload the file
-                            final uploadTask = await ref.putFile(image as File);
-                            final url = await uploadTask.ref.getDownloadURL();
-                            imageUrls.add(url);
-                          }
+                          // Use bytes for both web and mobile (more reliable)
+                          final bytes = await image.readAsBytes();
+                          final uploadTask = await ref.putData(bytes);
+                          final url = await uploadTask.ref.getDownloadURL();
+                          imageUrls.add(url);
                         } catch (e) {
                           // Skip failed uploads but continue with others
                           debugPrint('Error uploading image $i: $e');
@@ -292,15 +286,8 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        if (kIsWeb) {
-          // For web, we'll need to handle this differently
-          // Store the XFile for now, we'll handle upload differently
-          // TODO: Properly implement web image handling
-          _images[index] = null; // Web image handling needs to be fixed
-        } else {
-          // For mobile, store the file
-          _images[index] = File(pickedFile.path);
-        }
+        // Store the XFile (works for both web and mobile)
+        _images[index] = pickedFile;
       });
     }
   }
