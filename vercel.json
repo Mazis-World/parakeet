@@ -1,8 +1,8 @@
 {
-  "buildCommand": "bash build.sh",
+  "buildCommand": "/bin/sh -c 'if [ -f build.sh ]; then /bin/sh build.sh; elif [ -f ../build.sh ]; then cd .. && /bin/sh build.sh; else echo build.sh not found; pwd; ls -la; exit 1; fi'",
   "outputDirectory": "dist",
   "framework": null,
-  "installCommand": "S=$HOME/flutter && git clone --depth 1 --branch stable https://github.com/flutter/flutter.git $S && export PATH=$S/bin:$PATH",
+  "installCommand": "/bin/sh -c 'if [ ! -x \"$HOME/flutter/bin/flutter\" ]; then git clone --depth 1 --branch stable https://github.com/flutter/flutter.git \"$HOME/flutter\"; fi'",
   "devCommand": "flutter run -d chrome",
   "rewrites": [
     {
