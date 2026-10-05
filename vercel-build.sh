@@ -57,12 +57,16 @@ cd "$VERCEL_SOURCE_DIR" || cd "$(pwd)"
 echo "🏗️ Building Flutter web app..."
 "$FLUTTER_SDK_PATH/bin/flutter" build web --release
 
-# Verify build output
-if [ ! -d "build/web" ]; then
+# Verify build output and publish it outside gitignored /build/.
+if [ ! -f "build/web/index.html" ]; then
   echo "❌ Build output not found in build/web"
   exit 1
 fi
 
-echo "✅ Build complete! Output in build/web"
-ls -la build/web/ | head -10
+rm -rf dist
+mkdir -p dist
+cp -a build/web/. dist/
+
+echo "✅ Build complete! Output in dist"
+ls -la dist/ | head -10
 

@@ -1,0 +1,13 @@
+# Replaces .gitignore for Vercel uploads. Do not ignore dist/ or build/web:
+# Flutter writes the site to build/web, and .gitignore's /build/ rule makes
+# Vercel report that folder as missing ("No Output Directory named web").
+.dart_tool
+.git
+.idea
+.vscode
+android
+ios
+linux
+macos
+windows
+test

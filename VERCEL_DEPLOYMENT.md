@@ -19,7 +19,7 @@ The Parakeet app has been committed and pushed to your repository. Now let's dep
    - **Framework Preset:** Other
    - **Root Directory:** `./` (leave as default)
    - **Build Command:** `chmod +x build.sh && ./build.sh`
-   - **Output Directory:** `build/web`
+   - **Output Directory:** `dist`
    - **Install Command:** `chmod +x install.sh && ./install.sh`
    
    **Note:** The build scripts will automatically install Flutter SDK during the build process.

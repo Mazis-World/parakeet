@@ -10,7 +10,7 @@ This approach builds the Flutter app using GitHub Actions and commits the built 
 
 1. **GitHub Actions will build automatically** (workflow file already created)
 2. **Deploy the built files to Vercel:**
-   - In Vercel, set Output Directory to: `build/web`
+   - In Vercel, set Output Directory to: `dist`
    - Set Build Command to: `echo "Using pre-built files"`
    - Or commit the `build/web` folder directly
 
@@ -50,7 +50,7 @@ firebase deploy --only hosting
 Try updating Vercel settings to:
 - **Build Command:** `bash install.sh && bash build.sh`
 - **Install Command:** (leave empty)
-- **Output Directory:** `build/web`
+- **Output Directory:** `dist`
 
 Or use the updated `vercel.json` configuration.
 

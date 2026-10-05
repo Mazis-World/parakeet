@@ -21,7 +21,7 @@ If you need to set it up manually in Vercel dashboard:
   ```bash
   FLUTTER_VERSION=3.24.0 && FLUTTER_SDK=$HOME/flutter && mkdir -p $FLUTTER_SDK && cd /tmp && curl -L https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz -o flutter.tar.xz && tar xf flutter.tar.xz && mv flutter/* $FLUTTER_SDK/ && rm -rf flutter flutter.tar.xz && export PATH=$FLUTTER_SDK/bin:$PATH && cd $VERCEL_SOURCE_DIR && $FLUTTER_SDK/bin/flutter pub get && $FLUTTER_SDK/bin/flutter build web --release
   ```
-- **Output Directory:** `build/web`
+- **Output Directory:** `dist`
 - **Install Command:** (Leave empty or use: `echo 'Installing during build'`)
 
 ## Alternative: Firebase Hosting (Recommended)

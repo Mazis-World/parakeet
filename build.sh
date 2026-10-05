@@ -1,33 +1,44 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "🚀 Starting Parakeet build on Vercel..."
+echo "Starting Parakeet build..."
 
-# Set Flutter path (should be installed by install.sh)
-FLUTTER_SDK_PATH="$HOME/flutter"
+FLUTTER_SDK_PATH="${FLUTTER_SDK_PATH:-$HOME/flutter}"
 export PATH="$FLUTTER_SDK_PATH/bin:$PATH"
 
-# Verify Flutter is available
-if [ ! -f "$FLUTTER_SDK_PATH/bin/flutter" ]; then
-  echo "❌ Flutter not found at $FLUTTER_SDK_PATH/bin/flutter"
-  echo "Listing $HOME contents:"
-  ls -la "$HOME" || true
+if [ ! -x "$FLUTTER_SDK_PATH/bin/flutter" ]; then
+  echo "Flutter not found at $FLUTTER_SDK_PATH/bin/flutter"
   exit 1
 fi
 
-# Verify Flutter installation
-echo "✅ Flutter version:"
-"$FLUTTER_SDK_PATH/bin/flutter" --version
+echo "Flutter version:"
+flutter --version
 
-# Get dependencies
-echo "📚 Getting Flutter dependencies..."
-"$FLUTTER_SDK_PATH/bin/flutter" pub get
+echo "Getting dependencies..."
+flutter pub get
 
-# Build for web
-echo "🏗️ Building Flutter web app..."
-"$FLUTTER_SDK_PATH/bin/flutter" build web --release
+echo "Building Flutter web..."
+flutter build web --release
 
-echo "✅ Build complete! Output in build/web"
-echo "Listing build/web contents:"
-ls -la build/web/ || echo "Build directory not found"
+if [ ! -f "build/web/index.html" ] || [ ! -f "build/web/main.dart.js" ]; then
+  echo "Flutter did not produce build/web"
+  ls -la build 2>/dev/null || echo "build/ does not exist"
+  exit 1
+fi
 
+# /build/ is gitignored. Vercel hides gitignored paths and then reports
+# the missing folder using only the last path segment ("web").
+# Publish the compiled site to dist/, which is not ignored.
+echo "Publishing compiled site to dist/..."
+rm -rf dist
+mkdir -p dist
+cp -a build/web/. dist/
+
+if [ ! -f "dist/index.html" ] || [ ! -f "dist/main.dart.js" ]; then
+  echo "dist/ is missing compiled web assets"
+  ls -la dist || true
+  exit 1
+fi
+
+echo "Output directory ready: dist"
+ls -la dist | head -20
