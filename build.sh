@@ -31,7 +31,16 @@ export PATH="$FLUTTER_SDK_PATH/bin:$PATH"
 
 flutter --version
 flutter pub get
-flutter build web --release
+
+DART_DEFINES=""
+for name in FIREBASE_API_KEY FIREBASE_APP_ID FIREBASE_MESSAGING_SENDER_ID FIREBASE_PROJECT_ID FIREBASE_AUTH_DOMAIN FIREBASE_STORAGE_BUCKET; do
+  eval "value=\${$name:-}"
+  if [ -n "$value" ]; then
+    DART_DEFINES="$DART_DEFINES --dart-define=$name=$value"
+  fi
+done
+
+flutter build web --release $DART_DEFINES
 
 if [ ! -f build/web/index.html ] || [ ! -f build/web/main.dart.js ]; then
   echo "Flutter did not produce build/web"

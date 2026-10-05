@@ -22,15 +22,48 @@ import 'package:flutter/foundation.dart'
 /// );
 /// ```
 class DefaultFirebaseOptions {
+  static const String apiKey = String.fromEnvironment(
+    'FIREBASE_API_KEY',
+    defaultValue: 'AIzaSyDummyKeyReplaceWithYourOwn',
+  );
+  static const String appId = String.fromEnvironment(
+    'FIREBASE_APP_ID',
+    defaultValue: '1:123456789:web:abcdef',
+  );
+  static const String messagingSenderId = String.fromEnvironment(
+    'FIREBASE_MESSAGING_SENDER_ID',
+    defaultValue: '123456789',
+  );
+  static const String projectId = String.fromEnvironment(
+    'FIREBASE_PROJECT_ID',
+    defaultValue: 'your-project-id',
+  );
+  static const String authDomain = String.fromEnvironment(
+    'FIREBASE_AUTH_DOMAIN',
+    defaultValue: 'your-project-id.firebaseapp.com',
+  );
+  static const String storageBucket = String.fromEnvironment(
+    'FIREBASE_STORAGE_BUCKET',
+    defaultValue: 'your-project-id.appspot.com',
+  );
+
+  /// True only after the placeholder Firebase web key has been replaced.
+  static bool get isConfigured =>
+      apiKey.isNotEmpty &&
+      !apiKey.contains('Dummy') &&
+      apiKey != 'YOUR_API_KEY' &&
+      projectId != 'your-project-id' &&
+      projectId != 'YOUR_PROJECT_ID';
+
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       return const FirebaseOptions(
-        apiKey: 'AIzaSyDummyKeyReplaceWithYourOwn',
-        appId: '1:123456789:web:abcdef',
-        messagingSenderId: '123456789',
-        projectId: 'your-project-id',
-        authDomain: 'your-project-id.firebaseapp.com',
-        storageBucket: 'your-project-id.appspot.com',
+        apiKey: apiKey,
+        appId: appId,
+        messagingSenderId: messagingSenderId,
+        projectId: projectId,
+        authDomain: authDomain,
+        storageBucket: storageBucket,
       );
     }
     switch (defaultTargetPlatform) {

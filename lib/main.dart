@@ -285,6 +285,16 @@ class MainPage extends StatelessWidget {
     );
   }
 }
+void _showMissingFirebaseConfig(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Firebase rejected this request because the app is still using the placeholder API key. Add your Firebase web config, then redeploy.',
+      ),
+    ),
+  );
+}
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -299,6 +309,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Method for handling login
   Future<void> _login() async {
+    if (!DefaultFirebaseOptions.isConfigured) {
+      _showMissingFirebaseConfig(context);
+      return;
+    }
     try {
       // Sign in with email and password
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -310,10 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login Successful!')),
       );
-      Navigator.pushReplacementNamed(context, '/dashboard');
-
-      // You can navigate to the next screen here, for example:
-      // Navigator.pushReplacementNamed(context, '/home');
+      Navigator.popUntil(context, (route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
       // Handle errors if login fails
       ScaffoldMessenger.of(context).showSnackBar(
@@ -439,6 +450,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return;
     }
 
+    if (!DefaultFirebaseOptions.isConfigured) {
+      _showMissingFirebaseConfig(context);
+      return;
+    }
+
     try {
       // Create a user with email and password
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -450,10 +466,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration Successful!')),
       );
-      Navigator.pushReplacementNamed(context, '/dashboard');
-
-      // Navigate to the next screen, e.g., Home screen:
-      // Navigator.pushReplacementNamed(context, '/home');
+      Navigator.popUntil(context, (route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
       // Handle errors (e.g., weak password, email already in use)
       ScaffoldMessenger.of(context).showSnackBar(
