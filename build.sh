@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# Vercel may inherit a PATH that only contains the Flutter SDK, which makes
-# bash, git, and other system tools exit 127 (command not found).
+# Vercel may inherit a PATH that only contains the Flutter SDK.
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}"
 
 if [ -z "${HOME:-}" ]; then
@@ -10,7 +9,14 @@ if [ -z "${HOME:-}" ]; then
   export HOME
 fi
 
-echo "Starting Parakeet build in $(pwd)"
+START_DIR=$(pwd)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+cd "$SCRIPT_DIR"
+
+echo "Vercel working directory: $START_DIR"
+echo "Flutter project directory: $SCRIPT_DIR"
+
+git config --global --add safe.directory "$SCRIPT_DIR" || true
 
 FLUTTER_SDK_PATH="${FLUTTER_SDK_PATH:-$HOME/flutter}"
 
@@ -20,11 +26,7 @@ if [ ! -x "$FLUTTER_SDK_PATH/bin/flutter" ]; then
   git clone --depth 1 --branch stable https://github.com/flutter/flutter.git "$FLUTTER_SDK_PATH"
 fi
 
-if ! command -v bash >/dev/null 2>&1; then
-  echo "bash is required to run the Flutter tool but was not found"
-  exit 1
-fi
-
+git config --global --add safe.directory "$FLUTTER_SDK_PATH" || true
 export PATH="$FLUTTER_SDK_PATH/bin:$PATH"
 
 flutter --version
@@ -37,16 +39,26 @@ if [ ! -f build/web/index.html ] || [ ! -f build/web/main.dart.js ]; then
   exit 1
 fi
 
-# /build/ is gitignored, so publish the compiled site somewhere Vercel can use.
-rm -rf dist
-mkdir -p dist
-cp -a build/web/. dist/
+publish() {
+  dest=$1
+  mkdir -p "$dest"
+  cp -a build/web/. "$dest/"
+}
 
-if [ ! -f dist/index.html ] || [ ! -f dist/main.dart.js ]; then
+# Normal case: Vercel root is the repository root and outputDirectory is dist.
+publish "$SCRIPT_DIR/dist"
+
+# The Vercel project root is currently build/web. That folder is gitignored,
+# so the build starts there and cannot see this script until we walk upward.
+# Publish dist relative to that directory as well.
+if [ "$START_DIR" != "$SCRIPT_DIR" ]; then
+  publish "$START_DIR/dist"
+fi
+
+if [ ! -f "$SCRIPT_DIR/dist/index.html" ] || [ ! -f "$SCRIPT_DIR/dist/main.dart.js" ]; then
   echo "dist/ is missing compiled web assets"
-  ls -la dist || true
   exit 1
 fi
 
-echo "Output directory ready: dist"
-ls -la dist
+echo "Output directory ready: $SCRIPT_DIR/dist"
+ls -la "$SCRIPT_DIR/dist"

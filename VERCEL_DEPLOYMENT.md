@@ -17,8 +17,8 @@ The Parakeet app has been committed and pushed to your repository. Now let's dep
 
 3. **Configure Project:**
    - **Framework Preset:** Other
-   - **Root Directory:** `./` (leave as default)
-   - **Build Command:** `chmod +x build.sh && ./build.sh`
+   - **Root Directory:** repository root (`.`). Do not use `build/web`; that folder is gitignored and does not contain the app.
+   - **Build Command:** `/bin/sh build.sh`
    - **Output Directory:** `dist`
    - **Install Command:** `chmod +x install.sh && ./install.sh`
    
