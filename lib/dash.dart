@@ -197,16 +197,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildCategoryItem('assets/icon_snake.png', 'Reptiles'),
                   _buildCategoryItem('assets/icon_fish.png', 'Aquatic'),
                   _buildCategoryItem('assets/icon_dog.png', 'Farm Animals'),
-                    _buildCategoryItem('assets/icon_cat.png', 'Exotic Animals'),
-                    _buildCategoryItem('assets/icon_bird.png', 'Wildlife'),
-                    _buildCategoryItem('assets/icon_mouse.png', 'Insects'),
-                    _buildCategoryItem('assets/icon_snake.png', 'Aquatic Mammals'),
-                    _buildCategoryItem('assets/icon_fish.png', 'Amphibians'),
-                    _buildCategoryItem('assets/icon_dog.png', 'Birds of Prey'),
-                    _buildCategoryItem('assets/icon_cat.png', 'Small Mammals'),
-                    _buildCategoryItem('assets/icon_bird.png', 'Primates'),
-                  ],
-                ),
+                  _buildCategoryItem('assets/icon_cat.png', 'Exotic Animals'),
+                  _buildCategoryItem('assets/icon_bird.png', 'Wildlife'),
+                  _buildCategoryItem('assets/icon_mouse.png', 'Insects'),
+                  _buildCategoryItem('assets/icon_snake.png', 'Aquatic Mammals'),
+                  _buildCategoryItem('assets/icon_fish.png', 'Amphibians'),
+                  _buildCategoryItem('assets/icon_dog.png', 'Birds of Prey'),
+                  _buildCategoryItem('assets/icon_cat.png', 'Small Mammals'),
+                  _buildCategoryItem('assets/icon_bird.png', 'Primates'),
+                ],
               ),
             ),
           ),
@@ -305,46 +304,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
 
       // Floating Action Button - Show different options based on user type
-      floatingActionButton: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseAuth.instance.currentUser != null
-            ? FirebaseFirestore.instance
-                .collection('listings')
-                .where('hostId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                .limit(1)
-                .snapshots()
-            : Stream<QuerySnapshot>.value(
-                QuerySnapshot.empty(FirebaseFirestore.instance.collection('listings')),
-              ),
-        builder: (context, snapshot) {
-          final isHost = snapshot.hasData && 
-                         snapshot.data != null && 
-                         snapshot.data!.docs.isNotEmpty;
-          
-          return FloatingActionButton(
-            onPressed: () {
-              if (isHost) {
-                // If user has listings, show host dashboard
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const HostDashboardScreen(),
-                  ),
+      floatingActionButton: FirebaseAuth.instance.currentUser != null
+          ? StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('listings')
+                  .where('hostId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                  .limit(1)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                final isHost = snapshot.hasData && 
+                               snapshot.data != null && 
+                               snapshot.data!.docs.isNotEmpty;
+                
+                return FloatingActionButton(
+                  onPressed: () {
+                    if (isHost) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HostDashboardScreen(),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AnimalFormScreen()),
+                      );
+                    }
+                  },
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  tooltip: isHost ? 'Host Dashboard' : 'Create Listing',
+                  child: Icon(isHost ? Icons.dashboard : Icons.add),
                 );
-              } else {
-                // Otherwise, show create listing
+              },
+            )
+          : FloatingActionButton(
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AnimalFormScreen()),
                 );
-              }
-            },
-            child: Icon(isHost ? Icons.dashboard : Icons.add),
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            tooltip: isHost ? 'Host Dashboard' : 'Create Listing',
-          );
-        },
-      ),
+              },
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              tooltip: 'Create Listing',
+              child: const Icon(Icons.add),
+            ),
     );
   }
 
@@ -752,7 +758,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         ],
-      ),
       ),
     );
   }

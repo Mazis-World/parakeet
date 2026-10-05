@@ -306,7 +306,13 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                         );
                       }
                     },
-                    child: _buildHostCard(hostName, hostEmail),
+                    child: _buildHostCard(
+                      hostName: hostName,
+                      hostEmail: hostEmail,
+                      hostId: hostId,
+                      listingId: listingId,
+                      petName: name,
+                    ),
                   ),
                   
                   const SizedBox(height: 24),
@@ -526,7 +532,13 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     );
   }
 
-  Widget _buildHostCard(String hostName, String? hostEmail) {
+  Widget _buildHostCard({
+    required String hostName,
+    String? hostEmail,
+    String? hostId,
+    required String listingId,
+    required String petName,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -620,7 +632,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                   userEmail1: user.email,
                   userEmail2: hostEmail,
                   petListingId: listingId,
-                  petName: name,
+                  petName: petName,
                 );
 
                 if (context.mounted) {
@@ -632,7 +644,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                         otherUserId: hostId,
                         otherUserName: hostName,
                         otherUserEmail: hostEmail,
-                        petName: name,
+                        petName: petName,
                         petListingId: listingId,
                       ),
                     ),
