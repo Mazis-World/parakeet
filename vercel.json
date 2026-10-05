@@ -1,5 +1,5 @@
 {
-  "buildCommand": "/bin/sh -c 'd=$(pwd); i=0; while [ \"$i\" -lt 6 ]; do if [ -f \"$d/build.sh\" ]; then exec /bin/sh \"$d/build.sh\"; fi; p=$(dirname \"$d\"); [ \"$p\" = \"$d\" ] && break; d=$p; i=$((i+1)); done; echo \"Set the Vercel Root Directory to the repository root, not build/web\"; pwd; ls -la; exit 1'",
+  "buildCommand": "/bin/sh -c 'd=$PWD; while [ ! -f \"$d/build.sh\" ]; do [ \"$d\" = / ] && exit 1; d=${d%/*}; [ -n \"$d\" ] || d=/; done; exec /bin/sh \"$d/build.sh\"'",
   "outputDirectory": "dist",
   "framework": null,
   "installCommand": "/bin/sh -c 'if [ ! -x \"$HOME/flutter/bin/flutter\" ]; then git clone --depth 1 --branch stable https://github.com/flutter/flutter.git \"$HOME/flutter\"; fi'",
