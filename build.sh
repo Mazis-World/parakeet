@@ -39,26 +39,34 @@ if [ ! -f build/web/index.html ] || [ ! -f build/web/main.dart.js ]; then
   exit 1
 fi
 
+# Stage outside build/web. Copying build/web into build/web/dist fails because
+# that destination is inside the source tree. Vercel currently uses build/web
+# as the project root and expects the site in build/web/dist.
+STAGE=$(mktemp -d)
+cp -a build/web/. "$STAGE/"
+rm -rf "$STAGE/dist"
+
 publish() {
   dest=$1
   mkdir -p "$dest"
-  cp -a build/web/. "$dest/"
+  cp -a "$STAGE/." "$dest/"
 }
 
-# Normal case: Vercel root is the repository root and outputDirectory is dist.
 publish "$SCRIPT_DIR/dist"
 
-# The Vercel project root is currently build/web. That folder is gitignored,
-# so the build starts there and cannot see this script until we walk upward.
-# Publish dist relative to that directory as well.
 if [ "$START_DIR" != "$SCRIPT_DIR" ]; then
   publish "$START_DIR/dist"
+  OUTPUT_DIR=$START_DIR/dist
+else
+  OUTPUT_DIR=$SCRIPT_DIR/dist
 fi
 
-if [ ! -f "$SCRIPT_DIR/dist/index.html" ] || [ ! -f "$SCRIPT_DIR/dist/main.dart.js" ]; then
+rm -rf "$STAGE"
+
+if [ ! -f "$OUTPUT_DIR/index.html" ] || [ ! -f "$OUTPUT_DIR/main.dart.js" ]; then
   echo "dist/ is missing compiled web assets"
   exit 1
 fi
 
-echo "Output directory ready: $SCRIPT_DIR/dist"
-ls -la "$SCRIPT_DIR/dist"
+echo "Output directory ready: $OUTPUT_DIR"
+ls -la "$OUTPUT_DIR"
