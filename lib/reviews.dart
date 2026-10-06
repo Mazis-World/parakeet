@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:parakeet/firestore_errors.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String bookingId;
@@ -385,9 +386,7 @@ class ReviewsList extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return FirestoreErrorView(error: snapshot.error);
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

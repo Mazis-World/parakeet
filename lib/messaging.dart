@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:parakeet/firestore_errors.dart';
 import 'package:parakeet/notifications_service.dart';
 
 class ConversationsScreen extends StatelessWidget {
@@ -44,9 +45,7 @@ class ConversationsScreen extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+            return FirestoreErrorView(error: snapshot.error);
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -299,7 +298,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     try {
       // Add message to messages collection
-      await FirebaseFirestore.instance.collection('messages').add({
+      await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(widget.conversationId)
+          .collection('messages')
+          .add({
         'conversationId': widget.conversationId,
         'senderId': user.uid,
         'senderName': user.displayName ?? user.email?.split('@')[0] ?? 'Unknown',
@@ -432,8 +435,9 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
+                  .collection('conversations')
+                  .doc(widget.conversationId)
                   .collection('messages')
-                  .where('conversationId', isEqualTo: widget.conversationId)
                   .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -442,9 +446,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
+                  return FirestoreErrorView(error: snapshot.error);
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

@@ -6,6 +6,7 @@ import 'package:parakeet/create_companion.dart';
 import 'package:parakeet/bookings.dart';
 import 'package:parakeet/messaging.dart';
 import 'package:parakeet/availability_calendar.dart';
+import 'package:parakeet/firestore_errors.dart';
 import 'package:parakeet/notifications_service.dart';
 import 'package:intl/intl.dart';
 
@@ -394,9 +395,7 @@ class _ListingsTab extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return FirestoreErrorView(error: snapshot.error);
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -750,9 +749,7 @@ class _HostBookingsList extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return FirestoreErrorView(error: snapshot.error);
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

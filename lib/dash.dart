@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:parakeet/create_companion.dart';
+import 'package:parakeet/firestore_errors.dart';
 import 'package:parakeet/companions.dart';
 import 'package:parakeet/bookings.dart';
 import 'package:parakeet/messaging.dart';
@@ -222,9 +223,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }
                 
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
+                  return FirestoreErrorView(error: snapshot.error);
                 }
                 
                 // Filter documents based on search query and category

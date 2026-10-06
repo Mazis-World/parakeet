@@ -225,6 +225,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                     }
 
                     // Save the form data to Firestore
+                    try {
                     await FirebaseFirestore.instance.collection('listings').add({
                       'hostId': user.uid,
                       'hostName': user.displayName ?? user.email?.split('@')[0] ?? 'Unknown',
@@ -255,7 +256,22 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       'createdAt': Timestamp.now(),
                       'updatedAt': Timestamp.now(),
                     });
-                    
+                    } catch (e) {
+                      if (context.mounted) {
+                        final denied = e.toString().toLowerCase().contains('permission');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              denied
+                                  ? 'Firestore blocked this listing. Publish firestore.rules in the Firebase console, then try again.'
+                                  : 'Could not save the listing: $e',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
                     // Handle successful form submission
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(

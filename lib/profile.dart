@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:parakeet/companions.dart';
 import 'package:parakeet/bookings.dart';
 import 'package:parakeet/reviews.dart';
+import 'package:parakeet/firestore_errors.dart';
 import 'package:parakeet/settings.dart';
 import 'package:intl/intl.dart';
 
@@ -431,9 +432,7 @@ class _ListingsTab extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return FirestoreErrorView(error: snapshot.error);
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -513,9 +512,7 @@ class _ReviewsTab extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return FirestoreErrorView(error: snapshot.error);
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

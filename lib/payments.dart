@@ -5,6 +5,7 @@ import 'package:flutter_stripe/flutter_stripe.dart' hide Card;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:parakeet/firestore_errors.dart';
 import 'package:parakeet/notifications_service.dart';
 
 // NOTE: In production, you'll need a backend server to securely handle Stripe API keys
@@ -576,9 +577,7 @@ class TransactionsScreen extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+            return FirestoreErrorView(error: snapshot.error);
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
