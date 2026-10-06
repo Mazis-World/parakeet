@@ -7,6 +7,7 @@ import 'package:parakeet/bookings.dart';
 import 'package:parakeet/messaging.dart';
 import 'package:parakeet/availability_calendar.dart';
 import 'package:parakeet/firestore_errors.dart';
+import 'package:parakeet/firestore_lists.dart';
 import 'package:parakeet/notifications_service.dart';
 import 'package:intl/intl.dart';
 
@@ -177,8 +178,6 @@ class _OverviewTab extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('bookings')
                 .where('hostId', isEqualTo: userId)
-                .orderBy('createdAt', descending: true)
-                .limit(5)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -201,8 +200,10 @@ class _OverviewTab extends StatelessWidget {
                 );
               }
 
+              final recent = sortDocsByTime(snapshot.data!.docs, 'createdAt').take(5);
+
               return Column(
-                children: snapshot.data!.docs.map((doc) {
+                children: recent.map((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   return _BookingRequestCard(
                     bookingId: doc.id,
@@ -734,12 +735,9 @@ class _HostBookingsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Note: When using orderBy with where, Firestore requires a composite index
-    // For now, we'll filter in memory if status is provided to avoid index requirement
-    Query query = FirebaseFirestore.instance
+    final query = FirebaseFirestore.instance
         .collection('bookings')
-        .where('hostId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true);
+        .where('hostId', isEqualTo: userId);
 
     return StreamBuilder<QuerySnapshot>(
       stream: query.snapshots(),
@@ -752,7 +750,14 @@ class _HostBookingsList extends StatelessWidget {
           return FirestoreErrorView(error: snapshot.error);
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        final bookings = sortDocsByTime(snapshot.data?.docs ?? [], 'createdAt')
+            .where((doc) {
+          if (status == null) return true;
+          final data = doc.data();
+          return data is Map && data['status'] == status;
+        }).toList();
+
+        if (bookings.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -773,9 +778,9 @@ class _HostBookingsList extends StatelessWidget {
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: snapshot.data!.docs.length,
+          itemCount: bookings.length,
           itemBuilder: (context, index) {
-            final doc = snapshot.data!.docs[index];
+            final doc = bookings[index];
             final data = doc.data() as Map<String, dynamic>;
             return _BookingRequestCard(
               bookingId: doc.id,
@@ -1117,7 +1122,6 @@ class _EarningsTab extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('bookings')
                 .where('hostId', isEqualTo: userId)
-                .where('paymentStatus', isEqualTo: 'paid')
                 .snapshots(),
             builder: (context, snapshot) {
               double totalEarnings = 0;
@@ -1130,6 +1134,7 @@ class _EarningsTab extends StatelessWidget {
 
                 for (var doc in snapshot.data!.docs) {
                   final data = doc.data() as Map<String, dynamic>;
+                  if (data['paymentStatus'] != 'paid') continue;
                   final amount = (data['totalPrice'] as num?)?.toDouble() ?? 0;
                   totalEarnings += amount;
                   totalBookings++;
@@ -1246,9 +1251,6 @@ class _EarningsTab extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('bookings')
                 .where('hostId', isEqualTo: userId)
-                .where('paymentStatus', isEqualTo: 'paid')
-                .orderBy('createdAt', descending: true)
-                .limit(10)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -1271,8 +1273,30 @@ class _EarningsTab extends StatelessWidget {
                 );
               }
 
+              final paid = sortDocsByTime(snapshot.data!.docs, 'createdAt')
+                  .where((doc) {
+                final data = doc.data();
+                return data is Map && data['paymentStatus'] == 'paid';
+              }).take(10).toList();
+
+              if (paid.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'No transactions yet',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
+                );
+              }
+
               return Column(
-                children: snapshot.data!.docs.map((doc) {
+                children: paid.map((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   return _EarningCard(bookingData: data);
                 }).toList(),

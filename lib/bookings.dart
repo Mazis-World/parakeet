@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:parakeet/firestore_errors.dart';
+import 'package:parakeet/firestore_lists.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:parakeet/messaging.dart';
@@ -72,21 +73,11 @@ class _BookingsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Query query = FirebaseFirestore.instance
+    // Filter and sort on the device. A status filter plus orderBy asks
+    // Firestore for a composite index that this project does not have.
+    final query = FirebaseFirestore.instance
         .collection('bookings')
         .where('renterId', isEqualTo: userId);
-
-    if (status == 'completed') {
-      if (includeCancelled) {
-        query = query.where('status', whereIn: ['completed', 'cancelled']);
-      } else {
-        query = query.where('status', isEqualTo: 'completed');
-      }
-    } else {
-      query = query.where('status', isEqualTo: status);
-    }
-
-    query = query.orderBy('createdAt', descending: true);
 
     return StreamBuilder<QuerySnapshot>(
       stream: query.snapshots(),
@@ -99,7 +90,17 @@ class _BookingsList extends StatelessWidget {
           return FirestoreErrorView(error: snapshot.error);
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        final bookings = sortDocsByTime(snapshot.data?.docs ?? [], 'createdAt')
+            .where((doc) {
+          final data = doc.data();
+          final bookingStatus = data is Map ? data['status'] as String? : null;
+          if (status == 'completed' && includeCancelled) {
+            return bookingStatus == 'completed' || bookingStatus == 'cancelled';
+          }
+          return bookingStatus == status;
+        }).toList();
+
+        if (bookings.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -120,9 +121,9 @@ class _BookingsList extends StatelessWidget {
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: snapshot.data!.docs.length,
+          itemCount: bookings.length,
           itemBuilder: (context, index) {
-            final doc = snapshot.data!.docs[index];
+            final doc = bookings[index];
             final data = doc.data() as Map<String, dynamic>;
             return _BookingCard(bookingId: doc.id, bookingData: data);
           },

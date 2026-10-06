@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:parakeet/firestore_errors.dart';
+import 'package:parakeet/firestore_lists.dart';
 import 'package:parakeet/notifications_service.dart';
 
 class ConversationsScreen extends StatelessWidget {
@@ -37,7 +38,6 @@ class ConversationsScreen extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('conversations')
             .where('participants', arrayContains: user.uid)
-            .orderBy('lastMessageTime', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -76,11 +76,14 @@ class ConversationsScreen extends StatelessWidget {
             );
           }
 
+          final conversations =
+              sortDocsByTime(snapshot.data!.docs, 'lastMessageTime');
+
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: snapshot.data!.docs.length,
+            itemCount: conversations.length,
             itemBuilder: (context, index) {
-              final doc = snapshot.data!.docs[index];
+              final doc = conversations[index];
               final data = doc.data() as Map<String, dynamic>;
               return _ConversationCard(conversationId: doc.id, conversationData: data);
             },

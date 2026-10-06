@@ -17,7 +17,7 @@ firebase use --add
 firebase deploy --only firestore:rules,firestore:indexes,storage
 ```
 
-The indexes in `firestore.indexes.json` match the app's `where` + `orderBy` queries. Until they finish building, those screens report a missing index instead of a permissions error.
+Messages, bookings, and transactions sort on the device, so those screens do not need a composite index. Profile listings and reviews still combine a filter with `orderBy`. The indexes in `firestore.indexes.json` cover those queries once you deploy them.
 
 If rules are already published and the error remains, check **App Check**. Enforcement without an App Check token in the app also comes back as `permission-denied`.
 

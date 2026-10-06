@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:parakeet/firestore_errors.dart';
+import 'package:parakeet/firestore_lists.dart';
 import 'package:parakeet/notifications_service.dart';
 
 // NOTE: In production, you'll need a backend server to securely handle Stripe API keys
@@ -569,7 +570,6 @@ class TransactionsScreen extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('transactions')
             .where('userId', isEqualTo: user.uid)
-            .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -599,11 +599,14 @@ class TransactionsScreen extends StatelessWidget {
             );
           }
 
+          final transactions =
+              sortDocsByTime(snapshot.data!.docs, 'createdAt');
+
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: snapshot.data!.docs.length,
+            itemCount: transactions.length,
             itemBuilder: (context, index) {
-              final doc = snapshot.data!.docs[index];
+              final doc = transactions[index];
               final data = doc.data() as Map<String, dynamic>;
               return _TransactionCard(transactionData: data);
             },
